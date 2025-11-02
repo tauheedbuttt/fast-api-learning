@@ -1,11 +1,11 @@
 from fastapi import FastAPI
-from typing import Union # types
+from typing import Union, Annotated # types
 from pydantic import BaseModel # A base class for creating Pydantic models.
 
 app = FastAPI()
 
 class Item(BaseModel):
-    id: int | None = None # Optional integer field
+    id: Annotated[int | None, "ID of the item"] = None # Optional integer field
     name: str
     price: float
     is_offer: Union[bool, None] = None # Union[str, None] means that q can be a string or None
