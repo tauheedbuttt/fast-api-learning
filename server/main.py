@@ -1,4 +1,4 @@
-from fastapi import FastAPI, Query, HTTPException, Request
+from fastapi import FastAPI, Query, HTTPException, Request, Depends, Header
 from typing import Union, Annotated, Literal # types
 from pydantic import BaseModel # A base class for creating Pydantic models, for validation and schema definition.
 from enum import Enum # Enum base class
@@ -30,6 +30,25 @@ class Filter(BaseModel):
     order_by: Literal['created_at'] = 'created_at'
     order: Literal['asc', 'desc'] = 'asc'
 
+# Dependencies
+
+async def verify_token(Authorization: Annotated[str | None, Header()] = None):
+    divided = Authorization.split(" ") if Authorization else []
+    token = divided[1] if len(divided) > 1 else None
+    if token is None or token != "secrettoken":
+        raise HTTPException(status_code=401, detail="Invalid or missing token")
+
+class CommonQueryParams:
+    def __init__(
+        self,
+        search: Annotated[str | None, Query(max_length=50)] = None,  # search is query, validates with string max length 50
+        skip: Annotated[int, Query(ge=0)] = 0,  # skip is query, validates with integer >= 0
+        limit: Annotated[int, Query(ge=1)] = 10,  # limit is query, validates with integer >= 1 
+    ):
+        self.search = search
+        self.skip = skip
+        self.limit = limit
+
 # Storage
 items: list[Item] = []
 users: list[User] = []
@@ -53,16 +72,14 @@ async def not_found_exception_handler(request: Request, exc: NotFoundException):
 def read_root():
     return {"Hello": "World"}
 
-@app.get("/items/{item_id}")
+@app.get("/items/{item_id}", dependencies=[Depends(verify_token)])
 def read_item(
     item_id: int,  #item_id is path, validates with integer
-    skip: int = 0,  #skip is query, validates with integer
-    limit: int = 10,  #limit is query, validates with integer
+    common: Annotated[CommonQueryParams, Depends(CommonQueryParams)], # common is dependency injection of CommonQueryParams
     allRecords: bool | None = None,  #allRecords is query, validates with boolean
-    search: Annotated[str | None, Query(max_length=50)] = None, # search is query, validates with string max length 50
     types: Annotated[list[ItemType] | None, Query()] = None, # list of enum values, passed as type=Food&type=Toy
     ):
-    print(skip, limit, allRecords, search, types.__str__()) 
+    print( (vars(common)), allRecords, types.__str__()) 
     item = next((item for item in items if item.id == item_id), None)
     
     if(item is None):
