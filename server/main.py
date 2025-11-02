@@ -1,4 +1,5 @@
 from fastapi import FastAPI, Query, HTTPException, Request, Depends, Header
+from fastapi.security import OAuth2PasswordBearer
 from typing import Union, Annotated, Literal # types
 from pydantic import BaseModel # A base class for creating Pydantic models, for validation and schema definition.
 from enum import Enum # Enum base class
@@ -6,6 +7,7 @@ from datetime import datetime
 from fastapi.responses import JSONResponse
 
 app = FastAPI()
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
 
 # Schemas
 
@@ -87,7 +89,11 @@ def read_item(
     return item
 
 @app.get("/items")
-def read_items(filters: Annotated[Filter, Query()]) -> list[Item]: # return type is list of Item
+def read_items(
+    token: Annotated[str, Depends(oauth2_scheme)], 
+    filters: Annotated[Filter, Query()]
+    ) -> list[Item]: # return type is list of Item
+    print(token)
     return items
 
 @app.post("/items/")

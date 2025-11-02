@@ -33,3 +33,8 @@ Learning FastAPI from python
 10 - FOrm() for formdata
 11 - File() for files
 12 - Error handling with raise
+
+# Advanced
+
+1 - Dependencies - how to define a callable Class and Function to use as reusable type for FastAPI.
+2 - Middlewares are stacked, not done one by one in chain like NODEjs
