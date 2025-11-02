@@ -10,3 +10,18 @@ Learning FastAPI from python
 
 1 - pip install "fastapi[standard]" (install packages)
 2 - pip install -r requirements.txt ( uses existing configuration to setup server, optional )
+3 - create main.py, import fast api and create app = FastAPI() just like express
+4 - use @app.get to define endpoint
+
+# Types
+
+1 - use typing package
+2 - almost same as js
+3 - define and document fields using annotated
+4 - Optional and Union are almost the same things
+
+# Basics
+
+1 - Enums - uses base class and inheritance
+2 - {path_string:path} pass strings as /path/to/file
+3 - query params bool: 1, True, true, on, yes
