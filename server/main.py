@@ -2,6 +2,7 @@ from fastapi import FastAPI, Query
 from typing import Union, Annotated, Literal # types
 from pydantic import BaseModel # A base class for creating Pydantic models, for validation and schema definition.
 from enum import Enum # Enum base class
+from datetime import datetime, time, timedelta
 
 app = FastAPI()
 
@@ -18,11 +19,16 @@ class Item(BaseModel):
     type: ItemType
     created_at: str
     
+class User(BaseModel):
+    username: str
+    full_name: str | None = None
+    
 class Filter(BaseModel):
     order_by: Literal['created_at'] = 'created_at'
     order: Literal['asc', 'desc'] = 'asc'
 
 items: list[Item] = []
+users: list[User] = []
 
 @app.get("/")
 def read_root():
@@ -46,10 +52,11 @@ def read_items(filters: Annotated[Filter, Query()]):
     return filters
 
 @app.post("/items/")
-def create_item(item: Item):
+def create_item(item: Item, user: User):
     item.id = len(items) + 1
-    item.created_at = f"2024-06-{item.id:02d}T12:00:00Z" # hardcoded for simplicity
+    item.created_at = datetime.now().isoformat()
     items.append(item)
+    users.append(user)
     if(item.type is ItemType.FOOD): # if using at is, use EnumClass.Member
         print("This is a food item.")
     if(item.type.value == "food"): # if using eqeq, use .value and string
