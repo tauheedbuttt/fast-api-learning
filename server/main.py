@@ -1,10 +1,13 @@
-from fastapi import FastAPI, Query
+from fastapi import FastAPI, Query, HTTPException, Request
 from typing import Union, Annotated, Literal # types
 from pydantic import BaseModel # A base class for creating Pydantic models, for validation and schema definition.
 from enum import Enum # Enum base class
-from datetime import datetime, time, timedelta
+from datetime import datetime
+from fastapi.responses import JSONResponse
 
 app = FastAPI()
+
+# Schemas
 
 class ItemType (str, Enum):
     FOOD = "food"
@@ -27,16 +30,31 @@ class Filter(BaseModel):
     order_by: Literal['created_at'] = 'created_at'
     order: Literal['asc', 'desc'] = 'asc'
 
+# Storage
 items: list[Item] = []
 users: list[User] = []
 
+# Exceptions
+
+# define custom exception in class, then register a handler for it
+class NotFoundException(Exception):
+    def __init__(self, name: str):
+        self.name = name
+
+@app.exception_handler(NotFoundException)
+async def not_found_exception_handler(request: Request, exc: NotFoundException):
+    return JSONResponse(
+        status_code=404,
+        content={"message": exc.name},
+    )
+    
+# Endpoints
 @app.get("/")
 def read_root():
     return {"Hello": "World"}
 
 @app.get("/items/{item_id}")
 def read_item(
-    filters: Annotated[Filter, Query()],
     item_id: int,  #item_id is path, validates with integer
     skip: int = 0,  #skip is query, validates with integer
     limit: int = 10,  #limit is query, validates with integer
@@ -44,12 +62,16 @@ def read_item(
     search: Annotated[str | None, Query(max_length=50)] = None, # search is query, validates with string max length 50
     types: Annotated[list[ItemType] | None, Query()] = None, # list of enum values, passed as type=Food&type=Toy
     ):
-    print(skip, limit, allRecords, search, types.__str__(), filters) 
-    return (item for item in items if item.id == item_id)
+    print(skip, limit, allRecords, search, types.__str__()) 
+    item = next((item for item in items if item.id == item_id), None)
+    
+    if(item is None):
+        raise NotFoundException(name=f"Item with id {item_id} not found")
+    return item
 
 @app.get("/items")
-def read_items(filters: Annotated[Filter, Query()]):
-    return filters
+def read_items(filters: Annotated[Filter, Query()]) -> list[Item]: # return type is list of Item
+    return items
 
 @app.post("/items/")
 def create_item(item: Item, user: User):

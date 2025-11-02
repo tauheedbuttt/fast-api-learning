@@ -28,3 +28,8 @@ Learning FastAPI from python
 4 - query further validation with Annotated
 5 - AfterValidator for custom validation function
 6 - Passing json as query and using class base validation for querys
+7 - use Annotated[data type, request part (query, body etc.)]
+9 - return type with -> data_type
+10 - FOrm() for formdata
+11 - File() for files
+12 - Error handling with raise
