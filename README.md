@@ -25,3 +25,6 @@ Learning FastAPI from python
 1 - Enums - uses base class and inheritance
 2 - {path_string:path} pass strings as /path/to/file
 3 - query params bool: 1, True, true, on, yes
+4 - query further validation with Annotated
+5 - AfterValidator for custom validation function
+6 - Passing json as query and using class base validation for querys
